@@ -4,11 +4,11 @@ from datetime import datetime
 import json
 import os
 
-st.set_page_config(page_title="نظام البقالة الشامل", page_icon="🛒", layout="centered")
+st.set_page_config(page_title="نظام البقالة الشامل", page_icon="🛒", layout="wide")
 
 LANGUAGES = {
     "العربية": {
-        "login_title": "تسجيل دخول النظام", "username": "اسم المستخدم", "password": "كلمة المرور",
+        "login_title": "تسجيل دخول النظام الأمني", "username": "اسم المستخدم", "password": "كلمة المرور",
         "login_btn": "دخول", "login_err": "اسم المستخدم أو كلمة المرور غير صحيحة", "logout": "تسجيل الخروج",
         "welcome": "مرحباً بك", "tab1": "💰 شاشة البيع (الكاشير)", "tab2": "📦 إدارة المخزون والأرباح",
         "tab3": "📊 تقارير المبيعات", "select_cat": "اختر فئة المنتج:", "select_item": "اختر المنتج:",
@@ -20,68 +20,20 @@ LANGUAGES = {
         "sell_price": "سعر البيع (د.ك):", "cost_price": "سعر الشراء/التكلفة (د.ك):",
         "initial_stock": "الكمية الأولية:", "add_btn": "إضافة الصنف", "net_profit": "صافي الربح",
         "daily": "المبيعات اليومية", "weekly": "المبيعات الأسبوعية", "monthly": "المبيعات الشهرية", "yearly": "المبيعات السنوية"
-    },
-    "English": {
-        "login_title": "System Login", "username": "Username", "password": "Password",
-        "login_btn": "Login", "login_err": "Invalid Username or Password", "logout": "Logout",
-        "welcome": "Welcome", "tab1": "💰 POS (Cashier)", "tab2": "📦 Inventory & Profits",
-        "tab3": "📊 Sales Reports", "select_cat": "Select Category:", "select_item": "Select Product:",
-        "price": "Price", "cost": "Cost", "stock": "Available Stock", "qty": "Quantity Sold:",
-        "sell_btn": "Complete Sale", "success_sell": "Sold successfully! Total",
-        "error_stock": "Sorry, insufficient stock!", "undo_btn": "↩️ Undo Last Sale",
-        "undo_success": "Last sale undone and stock restored!", "no_sales_to_undo": "No sales to undo.",
-        "add_item": "Add New Product", "item_name": "Product Name:", "item_cat": "Category:",
-        "sell_price": "Selling Price (KD):", "cost_price": "Cost Price (KD):",
-        "initial_stock": "Initial Stock:", "add_btn": "Add Product", "net_profit": "Net Profit",
-        "daily": "Daily Sales", "weekly": "Weekly Sales", "monthly": "Monthly Sales", "yearly": "Yearly Sales"
-    },
-    "বাংলা": {
-        "login_title": "সিস্টেম লগইন", "username": "ব্যবহারকারী নাম", "password": "পাসওয়ার্ড",
-        "login_btn": "লগইন", "login_err": "ভুল ইউজারনেম বা পাসওয়ার্ড", "logout": "লগআউট",
-        "welcome": "স্বাগতম", "tab1": "💰 ক্যাশিয়ার", "tab2": "📦 ইনভেন্টরি", "tab3": "📊 বিক্রয় রিপোর্ট",
-        "select_cat": "বিভাগ নির্বাচন করুন:", "select_item": "পণ্য নির্বাচন করুন:", "price": "মূল্য",
-        "cost": "ক্রয়মূল্য", "stock": "মজুদ", "qty": "পরিমাণ:", "sell_btn": "বিক্রি সম্পন্ন করুন",
-        "success_sell": "সফলভাবে বিক্রি হয়েছে! মোট", "error_stock": "পর্যাপ্ত মজুদ নেই!",
-        "undo_btn": "↩️ শেষ বিক্রি বাতিল করুন", "undo_success": "শেষ বিক্রি বাতিল করা হয়েছে!", "no_sales_to_undo": "বাতিল করার মতো কোনো বিক্রি নেই।",
-        "add_item": "নতুন পণ্য যোগ করুন", "item_name": "পণ্যের নাম:", "item_cat": "বিভাগ:",
-        "sell_price": "বিক্রয়মূল্য:", "cost_price": "ক্রয়মূল্য:", "initial_stock": "প্রাথমিক মজুদ:",
-        "add_btn": "পণ্য যোগ করুন", "net_profit": "নিট লাভ", "daily": "দৈনিক বিক্রি",
-        "weekly": "সাপ্তাহিক বিক্রি", "monthly": "মাসিক বিক্রি", "yearly": "বার্ষিক বিক্রি"
-    },
-    "اردو": {
-        "login_title": "سسٹم لاگ ان", "username": "صارف کا نام", "password": "پاس ورڈ",
-        "login_btn": "لاگ ان", "login_err": "غلط نام یا پاس ورڈ", "logout": "لاگ آؤٹ",
-        "welcome": "خوش آمدید", "tab1": "💰 کیشئر (فروخت)", "tab2": "📦 انوینٹری اور منافع",
-        "tab3": "📊 سیلز رپورٹس", "select_cat": "زمرہ منتخب کریں:", "select_item": "مصنوعات منتخب کریں:",
-        "price": "قیمت", "cost": "لاگت", "stock": "موجودہ اسٹاک", "qty": "مقدار:",
-        "sell_btn": "فروخت مکمل کریں", "success_sell": "کامیابی سے فروخت ہو گیا! کل",
-        "error_stock": "اسٹاک ناکافی ہے!", "undo_btn": "↩️ آخری فروخت منسوخ کریں", "undo_success": "آخری فروخت منسوخ کر دی گئی!", "no_sales_to_undo": "منسوخ کرنے کے لیے کوئی فروخت نہیں ہے۔",
-        "add_item": "نیا پروڈکٹ شامل کریں", "item_name": "پروڈکٹ کا نام:", "item_cat": "زمرہ:",
-        "sell_price": "فروخت کی قیمت:", "cost_price": "خرید کی قیمت:",
-        "initial_stock": "ابتدائی اسٹاک:", "add_btn": "پروڈکٹ شامل کریں", "net_profit": "خالص منافع",
-        "daily": "روزانہ فروخت", "weekly": "ہفتہ وار فروخت", "monthly": "ماہانہ فروخت", "yearly": "سالانہ فروخت"
-    },
-    "हिन्दी": {
-        "login_title": "सिस्टम लॉगिन", "username": "उपयोगकर्ता नाम", "password": "पासवर्ड",
-        "login_btn": "लॉगिन", "login_err": "गलत उपयोगकर्ता नाम या पासवर्ड", "logout": "लॉग आउट",
-        "welcome": "स्वागत है", "tab1": "💰 कैशियर", "tab2": "📦 इन्वेंट्री", "tab3": "📊 बिक्री रिपोर्ट",
-        "select_cat": "श्रेणी चुनें:", "select_item": "उत्पाद चुनें:", "price": "कीमत",
-        "cost": "लागत", "stock": "स्टॉक", "qty": "मात्रा:", "sell_btn": "बिक्री पूरी करें",
-        "success_sell": "सफलतापूर्वक बेचा गया! कुल", "error_stock": "स्टॉक पर्याप्त नहीं है!",
-        "undo_btn": "↩️ अंतिम बिक्री पूर्ववत करें", "undo_success": "अंतिम बिक्री पूर्ववत कर दी गई!", "no_sales_to_undo": "पूर्ववत करने के लिए कोई बिक्री नहीं है।",
-        "add_item": "नया उत्पाद जोड़ें", "item_name": "उत्पाद का नाम:", "item_cat": "श्रेणी:",
-        "sell_price": "विक्री मूल्य:", "cost_price": "लागत मूल्य:", "initial_stock": "प्रारंभिक स्टॉक:",
-        "add_btn": "उत्पाद जोड़ें", "net_profit": "शुद्ध लाभ", "daily": "दैनिक बिक्री",
-        "weekly": "साप्ताहिक बिक्री", "monthly": "मासिक बिक्री", "yearly": "वार्षिक बिक्री"
     }
 }
 
 with st.sidebar:
-    selected_lang = st.selectbox("🌐 Choose Language / اختر اللغة", list(LANGUAGES.keys()))
+    selected_lang = st.selectbox("🌐 اختر اللغة", list(LANGUAGES.keys()))
     t = LANGUAGES[selected_lang]
     st.markdown("---")
 
-USERS = {"admin": "1234", "cashier1": "1111", "abu_fahad": "2026"}
+# قائمة المستخدمين الآمنة (يتم إضافتهم من قِبلك فقط لضمان الأمان وعدم التسجيل العشوائي)
+USERS = {
+    "abu_fahad": "2026",      # حساب المدير والصلاحيات الكاملة
+    "cashier_1": "1111",      # حساب الكاشير الأول
+    "cashier_2": "2222"       # حساب الكاشير الثاني
+}
 
 if 'logged_in' not in st.session_state:
     st.session_state.logged_in = False
@@ -109,8 +61,8 @@ with st.sidebar:
         st.session_state.username = ""
         st.rerun()
 
-INV_FILE = "inventory_v4.json"
-SALES_FILE = "sales_v4.json"
+INV_FILE = "inventory_v5.json"
+SALES_FILE = "sales_v5.json"
 
 def load_data():
     if os.path.exists(INV_FILE):
@@ -155,9 +107,15 @@ if 'sales_history' not in st.session_state:
 
 st.markdown(f"<h3 style='text-align: center; color: #1E3A8A;'>🛒 نظام إدارة البقالة الشامل</h3>", unsafe_allow_html=True)
 
-tab1, tab2, tab3 = st.tabs([t['tab1'], t['tab2'], t['tab3']])
+# تحديد الصلاحيات بناءً على المستخدم (المدير يقدر يشوف كل شي، الكاشير مخصص له البيع فقط)
+is_admin = (st.session_state.username == "abu_fahad")
 
-# 1. شاشة البيع مع ميزة التراجع
+if is_admin:
+    tab1, tab2, tab3 = st.tabs([t['tab1'], t['tab2'], t['tab3']])
+else:
+    tab1 = st.tabs([t['tab1']])[0]
+
+# 1. شاشة البيع
 with tab1:
     st.subheader(t['tab1'])
     categories = list(st.session_state.inventory.keys())
@@ -173,7 +131,7 @@ with tab1:
             cost = item_info["cost"]
             stock = item_info["stock"]
             
-            st.info(f"{t['price']}: {price} د.ك | {t['cost']}: {cost} د.ك | {t['stock']}: {stock}")
+            st.info(f"{t['price']}: {price} د.ك | {t['stock']}: {stock}")
             qty = st.number_input(t['qty'], min_value=1, max_value=max(1, stock), value=1)
             
             if st.button(t['sell_btn']):
@@ -193,7 +151,7 @@ with tab1:
                     save_data(st.session_state.inventory)
                     save_sales(st.session_state.sales_history)
                     
-                    st.success(f"{t['success_sell']}: {total_price:.3f} د.ك | {t['net_profit']}: {profit:.3f} د.ك")
+                    st.success(f"{t['success_sell']}: {total_price:.3f} د.ك")
                     st.rerun()
                 else:
                     st.error(t['error_stock'])
@@ -215,100 +173,97 @@ with tab1:
                     st.warning(t['no_sales_to_undo'])
         else:
             st.warning("لا توجد منتجات في هذا القسم.")
-    else:
-        st.warning("لا توجد فئات مخزون.")
 
-# 2. إدارة المخزون مع إمكانية التعديل والحذف
-with tab2:
-    st.subheader(t['tab2'])
-    
-    # اختيار فئة للتعديل أو عرضها
-    cats = list(st.session_state.inventory.keys())
-    if cats:
-        edit_cat = st.selectbox("اختر الفئة للتعديل أو إدارة منتجاتها:", cats)
-        items_dict = st.session_state.inventory[edit_cat]
-        
-        for itm_name, itm_data in list(items_dict.items()):
-            with st.expander(f"📦 {itm_name} (المخزون: {itm_data['stock']})"):
-                new_n_name = st.text_input("اسم المنتج", value=itm_name, key=f"name_{edit_cat}_{itm_name}")
-                new_n_price = st.number_input("سعر البيع (د.ك)", value=float(itm_data["price"]), format="%.3f", key=f"p_{edit_cat}_{itm_name}")
-                new_n_cost = st.number_input("سعر التكلفة (د.ك)", value=float(itm_data["cost"]), format="%.3f", key=f"c_{edit_cat}_{itm_name}")
-                new_n_stock = st.number_input("المخزون", value=int(itm_data["stock"]), key=f"s_{edit_cat}_{itm_name}")
-                
-                col_m1, col_m2 = st.columns(2)
-                if col_m1.button("💾 حفظ التعديل", key=f"save_{edit_cat}_{itm_name}"):
-                    if new_n_name != itm_name:
+# 2. إدارة المخزون (للمدير فقط)
+if is_admin:
+    with tab2:
+        st.subheader(t['tab2'])
+        cats = list(st.session_state.inventory.keys())
+        if cats:
+            edit_cat = st.selectbox("اختر الفئة للتعديل:", cats)
+            items_dict = st.session_state.inventory[edit_cat]
+            
+            for itm_name, itm_data in list(items_dict.items()):
+                with st.expander(f"📦 {itm_name} (المخزون: {itm_data['stock']})"):
+                    new_n_name = st.text_input("اسم المنتج", value=itm_name, key=f"n_{edit_cat}_{itm_name}")
+                    new_n_price = st.number_input("سعر البيع (د.ك)", value=float(itm_data["price"]), format="%.3f", key=f"p_{edit_cat}_{itm_name}")
+                    new_n_cost = st.number_input("سعر التكلفة (د.ك)", value=float(itm_data["cost"]), format="%.3f", key=f"c_{edit_cat}_{itm_name}")
+                    new_n_stock = st.number_input("المخزون", value=int(itm_data["stock"]), key=f"s_{edit_cat}_{itm_name}")
+                    
+                    col_m1, col_m2 = st.columns(2)
+                    if col_m1.button("💾 حفظ التعديل", key=f"save_{edit_cat}_{itm_name}"):
+                        if new_n_name != itm_name:
+                            del st.session_state.inventory[edit_cat][itm_name]
+                        st.session_state.inventory[edit_cat][new_n_name] = {
+                            "price": new_n_price, "cost": new_n_cost, "stock": new_n_stock
+                        }
+                        save_data(st.session_state.inventory)
+                        st.success("تم التعديل بنجاح!")
+                        st.rerun()
+                        
+                    if col_m2.button("🗑️ حذف المنتج", key=f"del_{edit_cat}_{itm_name}"):
                         del st.session_state.inventory[edit_cat][itm_name]
-                    st.session_state.inventory[edit_cat][new_n_name] = {
-                        "price": new_n_price, "cost": new_n_cost, "stock": new_n_stock
-                    }
-                    save_data(st.session_state.inventory)
-                    st.success("تم التعديل بنجاح!")
-                    st.rerun()
-                    
-                if col_m2.button("🗑️ حذف المنتج", key=f"del_{edit_cat}_{itm_name}"):
-                    del st.session_state.inventory[edit_cat][itm_name]
-                    if not st.session_state.inventory[edit_cat]:
-                        del st.session_state.inventory[edit_cat]
-                    save_data(st.session_state.inventory)
-                    st.success("تم الحذف بنجاح!")
-                    st.rerun()
-                    
-    st.markdown("---")
-    st.subheader(t['add_item'])
-    new_cat = st.text_input(t['item_cat'], value="عام")
-    new_name = st.text_input(t['item_name'])
-    new_price = st.number_input(t['sell_price'], min_value=0.001, value=0.250, format="%.3f")
-    new_cost = st.number_input(t['cost_price'], min_value=0.000, value=0.150, format="%.3f")
-    new_stock = st.number_input(t['initial_stock'], min_value=1, value=20)
-    
-    if st.button(t['add_btn']):
-        if new_name:
-            if new_cat not in st.session_state.inventory:
-                st.session_state.inventory[new_cat] = {}
-            st.session_state.inventory[new_cat][new_name] = {"price": new_price, "cost": new_cost, "stock": new_stock}
-            save_data(st.session_state.inventory)
-            st.success("تم إضافة المنتج بنجاح!")
-            st.rerun()
-
-# 3. تقارير المبيعات مع إمكانية حذف أو مراجعة العمليات
-with tab3:
-    st.subheader(t['tab3'])
-    if len(st.session_state.sales_history) > 0:
-        df = pd.DataFrame(st.session_state.sales_history)
-        df['datetime'] = pd.to_datetime(df['datetime'])
+                        if not st.session_state.inventory[edit_cat]:
+                            del st.session_state.inventory[edit_cat]
+                        save_data(st.session_state.inventory)
+                        st.success("تم الحذف بنجاح!")
+                        st.rerun()
+                        
+        st.markdown("---")
+        st.subheader(t['add_item'])
+        new_cat = st.text_input(t['item_cat'], value="عام")
+        new_name = st.text_input(t['item_name'])
+        new_price = st.number_input(t['sell_price'], min_value=0.001, value=0.250, format="%.3f")
+        new_cost = st.number_input(t['cost_price'], min_value=0.000, value=0.150, format="%.3f")
+        new_stock = st.number_input(t['initial_stock'], min_value=1, value=20)
         
-        report_type = st.radio("اختر نطاق التقرير:", [t['daily'], t['weekly'], t['monthly'], t['yearly']])
-        now = datetime.now()
-        
-        if report_type == t['daily']:
-            filtered_df = df[df['datetime'].dt.date == now.date()]
-        elif report_type == t['weekly']:
-            filtered_df = df[df['datetime'] >= (now - pd.Timedelta(days=7))]
-        elif report_type == t['monthly']:
-            filtered_df = df[(df['datetime'].dt.month == now.month) & (df['datetime'].dt.year == now.year)]
-        else:
-            filtered_df = df[df['datetime'].dt.year == now.year]
-            
-        if not filtered_df.empty:
-            st.dataframe(filtered_df[['datetime', 'category', 'item', 'qty', 'total_price', 'profit', 'cashier']], use_container_width=True)
-            tot_rev = filtered_df['total_price'].sum()
-            tot_profit = filtered_df['profit'].sum()
-            
-            col_a, col_b = st.columns(2)
-            col_a.metric("إجمالي المبيعات", f"{tot_rev:.3f} د.ك")
-            col_b.metric("صافي الربح الإجمالي", f"{tot_profit:.3f} د.ك")
-            
-            st.markdown("---")
-            st.subheader("إدارة أو حذف عملية بيع مسجلة بالخطأ")
-            sale_indices = filtered_df.index.tolist()
-            selected_sale_idx = st.selectbox("اختر رقم العملية للحذف:", sale_indices)
-            if st.button("🗑️ حذف هذه الفاتورة من السجل"):
-                del st.session_state.sales_history[selected_sale_idx]
-                save_sales(st.session_state.sales_history)
-                st.success("تم حذف الفاتورة بنجاح!")
+        if st.button(t['add_btn']):
+            if new_name:
+                if new_cat not in st.session_state.inventory:
+                    st.session_state.inventory[new_cat] = {}
+                st.session_state.inventory[new_cat][new_name] = {"price": new_price, "cost": new_cost, "stock": new_stock}
+                save_data(st.session_state.inventory)
+                st.success("تم إضافة المنتج بنجاح!")
                 st.rerun()
+
+    # 3. تقارير المبيعات (للمدير فقط)
+    with tab3:
+        st.subheader(t['tab3'])
+        if len(st.session_state.sales_history) > 0:
+            df = pd.DataFrame(st.session_state.sales_history)
+            df['datetime'] = pd.to_datetime(df['datetime'])
+            
+            report_type = st.radio("اختر نطاق التقرير:", [t['daily'], t['weekly'], t['monthly'], t['yearly']])
+            now = datetime.now()
+            
+            if report_type == t['daily']:
+                filtered_df = df[df['datetime'].dt.date == now.date()]
+            elif report_type == t['weekly']:
+                filtered_df = df[df['datetime'] >= (now - pd.Timedelta(days=7))]
+            elif report_type == t['monthly']:
+                filtered_df = df[(df['datetime'].dt.month == now.month) & (df['datetime'].dt.year == now.year)]
+            else:
+                filtered_df = df[df['datetime'].dt.year == now.year]
+                
+            if not filtered_df.empty:
+                st.dataframe(filtered_df[['datetime', 'category', 'item', 'qty', 'total_price', 'profit', 'cashier']], use_container_width=True)
+                tot_rev = filtered_df['total_price'].sum()
+                tot_profit = filtered_df['profit'].sum()
+                
+                col_a, col_b = st.columns(2)
+                col_a.metric("إجمالي المبيعات", f"{tot_rev:.3f} د.ك")
+                col_b.metric("صافي الربح الإجمالي", f"{tot_profit:.3f} د.ك")
+                
+                st.markdown("---")
+                st.subheader("إدارة أو حذف عملية بيع مسجلة بالخطأ")
+                sale_indices = filtered_df.index.tolist()
+                selected_sale_idx = st.selectbox("اختر رقم العملية للحذف:", sale_indices)
+                if st.button("🗑️ حذف هذه الفاتورة من السجل"):
+                    del st.session_state.sales_history[selected_sale_idx]
+                    save_sales(st.session_state.sales_history)
+                    st.success("تم حذف الفاتورة بنجاح!")
+                    st.rerun()
+            else:
+                st.info("لا توجد مبيعات في هذا النطاق.")
         else:
-            st.info("لا توجد مبيعات في هذا النطاق.")
-    else:
-        st.info("لا توجد مبيعات مسجلة حتى الآن.")
+            st.info("لا توجد مبيعات مسجلة حتى الآن.")
