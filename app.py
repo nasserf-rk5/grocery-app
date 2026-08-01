@@ -1,6 +1,8 @@
 import streamlit as st
 import pandas as pd
 from datetime import datetime
+import json
+import os
 
 # إعدادات الصفحة
 st.set_page_config(page_title="نظام إدارة البقالة", page_icon="🛒", layout="centered")
@@ -36,36 +38,63 @@ st.markdown("""
 
 st.markdown('<div class="main-header">🛒 نظام نقاط البيع والمخزون - البقالة</div>', unsafe_allow_html=True)
 
-# قاعدة بيانات المخزون والأصناف الافتراضية
+# ملفات الحفظ التلقائي عشان البيانات ما تروح مع التحديث
+INVENTORY_FILE = "inventory_data.json"
+SALES_FILE = "sales_data.json"
+
+# تحميل المخزون
+def load_inventory():
+    if os.path.exists(INVENTORY_FILE):
+        with open(INVENTORY_FILE, "r", encoding="utf-8") as f:
+            return json.load(f)
+    else:
+        return {
+            "ماء (صغير)": {"price": 0.100, "stock": 50},
+            "بيبسي / غازيات": {"price": 0.250, "stock": 30},
+            "حليب طازج": {"price": 0.500, "stock": 20},
+            "شيبس كويتي": {"price": 0.200, "stock": 40},
+            "بسكويت شوكولاتة": {"price": 0.150, "stock": 25},
+            "بطاقة تعبئة زين": {"price": 5.000, "stock": 10},
+            "بطاقة تعبئة اس تي سي": {"price": 5.000, "stock": 10},
+            "دخان مالبورو": {"price": 1.750, "stock": 15}
+        }
+
+def save_inventory(inv):
+    with open(INVENTORY_FILE, "w", encoding="utf-8") as f:
+        json.dump(inv, f, ensure_ascii=False, indent=4)
+
+# تحميل المبيعات
+def load_sales():
+    if os.path.exists(SALES_FILE):
+        with open(SALES_FILE, "r", encoding="utf-8") as f:
+            return json.load(f)
+    else:
+        return []
+
+def save_sales(sales):
+    with open(SALES_FILE, "w", encoding="utf-8") as f:
+        json.dump(sales, f, ensure_ascii=False, indent=4)
+
+# تهيئة البيانات في الذاكرة
 if 'inventory' not in st.session_state:
-    st.session_state.inventory = {
-        "ماء (صغير)": {"price": 0.100, "stock": 50},
-        "بيبسي / غازيات": {"price": 0.250, "stock": 30},
-        "حليب طازج": {"price": 0.500, "stock": 20},
-        "شيبس كويتي": {"price": 0.200, "stock": 40},
-        "بسكويت شوكولاتة": {"price": 0.150, "stock": 25},
-        "بطاقة تعبئة زين": {"price": 5.000, "stock": 10},
-        "بطاقة تعبئة اس تي سي": {"price": 5.000, "stock": 10},
-        "دخان مالبورو": {"price": 1.750, "stock": 15}
-    }
+    st.session_state.inventory = load_inventory()
 
 if 'sales_history' not in st.session_state:
-    st.session_state.sales_history = []
+    st.session_state.sales_history = load_sales()
 
-# القوائم الجانبية أو التبويبات الرئيسية
+# القوائم الرئيسية
 tab1, tab2, tab3 = st.tabs(["💰 شاشة البيع (الكاشير)", "📦 إدارة المخزون", "📊 تقارير المبيعات"])
 
 with tab1:
     st.subheader("إتمام عملية بيع جديدة")
     
-    # اختيار الصنف والكمية
     item_list = list(st.session_state.inventory.keys())
     selected_item = st.selectbox("اختر المنتج:", item_list)
     
     current_stock = st.session_state.inventory[selected_item]["stock"]
     item_price = st.session_state.inventory[selected_item]["price"]
     
-    st.info(isinstance(current_stock, int) and f"السعر: {item_price} د.ك | المخزون المتوفر: {current_stock} حبة" or "")
+    st.info(f"السعر: {item_price} د.ك | المخزون المتوفر: {current_stock} حبة")
     
     quantity = st.number_input("الكمية المباعة:", min_value=1, max_value=max(1, current_stock), value=1)
     
@@ -74,7 +103,6 @@ with tab1:
             st.session_state.inventory[selected_item]["stock"] -= quantity
             total_price = quantity * item_price
             
-            # تسجيل الفاتورة
             sale_record = {
                 "التاريخ والوقت": datetime.now().strftime("%Y-%m-%d %H:%M:%S"),
                 "المنتج": selected_item,
@@ -82,14 +110,19 @@ with tab1:
                 "الإجمالي (د.ك)": total_price
             }
             st.session_state.sales_history.append(sale_record)
+            
+            # حفظ التغييرات في الملفات الدائمة
+            save_inventory(st.session_state.inventory)
+            save_sales(st.session_state.sales_history)
+            
             st.success(f"تم بيع {quantity}x {selected_item} بنجاح! الإجمالي: {total_price:.3f} د.ك")
+            st.rerun()
         else:
             st.error("عذراً، الكمية المطلوبة غير متوفرة بالمخزون!")
 
 with tab2:
     st.subheader("إدارة المنتجات والمخزون")
     
-    # عرض المخزون الحالي كجدول
     inv_data = []
     for k, v in st.session_state.inventory.items():
         inv_data.append({"المنتج": k, "السعر (د.ك)": v["price"], "المخزون": v["stock"]})
@@ -105,6 +138,7 @@ with tab2:
     if st.button("إضافة الصنف للقائمة"):
         if new_name and new_name not in st.session_state.inventory:
             st.session_state.inventory[new_name] = {"price": new_price, "stock": new_stock}
+            save_inventory(st.session_state.inventory)
             st.success(f"تم إضافة المنتج '{new_name}' بنجاح!")
             st.rerun()
         elif new_name in st.session_state.inventory:
@@ -119,4 +153,4 @@ with tab3:
         total_revenue = df_sales["الإجمالي (د.ك)"].sum()
         st.metric(label="إجمالي المبيعات", value=f"{total_revenue:.3f} د.ك")
     else:
-        st.info("لا توجد مبيعات مسجلة حتى الآن اليوم.")
+        st.info("لا توجد مبيعات مسجلة حتى الآن.")
